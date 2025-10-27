@@ -1,0 +1,198 @@
+Sure, I can help you with that. Here's a set of test cases for the `Calculator` class:
+
+## Unit Tests
+
+### `add()` method
+
+java
+public class CalculatorTest {
+    private Calculator calculator;
+
+    @BeforeEach
+    void setUp() {
+        calculator = new Calculator();
+    }
+
+    @Test
+    void testAddPositiveNumbers() {
+        int result = calculator.add(5, 3);
+        assertEquals(8, result);
+    }
+
+    @Test
+    void testAddNegativeNumbers() {
+        int result = calculator.add(-2, -4);
+        assertEquals(-6, result);
+    }
+
+    @Test
+    void testAddZero() {
+        int result = calculator.add(0, 0);
+        assertEquals(0, result);
+    }
+}
+
+
+### `divide()` method
+
+java
+public class CalculatorTest {
+    private Calculator calculator;
+
+    @BeforeEach
+    void setUp() {
+        calculator = new Calculator();
+    }
+
+    @Test
+    void testDividePositiveNumbers() {
+        double result = calculator.divide(10, 2);
+        assertEquals(5.0, result, 0.0001);
+    }
+
+    @Test
+    void testDivideNegativeNumbers() {
+        double result = calculator.divide(-10, -2);
+        assertEquals(5.0, result, 0.0001);
+    }
+
+    @Test
+    void testDivideByZero() {
+        assertThrows(ArithmeticException.class, () -> calculator.divide(10, 0));
+    }
+}
+
+
+## Integration Tests
+
+In this case, there are no dependencies between the `add()` and `divide()` methods, so the integration tests would be the same as the unit tests.
+
+## Regression Tests
+
+### Minor Modification: Add an attribute
+
+Let's add a new attribute `history` to the `Calculator` class to keep track of the previous calculations:
+
+java
+public class Calculator {
+    private List<String> history = new ArrayList<>();
+
+    public int add(int a, int b) {
+        int result = a + b;
+        history.add(a + " + " + b + " = " + result);
+        return result;
+    }
+
+    public double divide(int a, int b) {
+        if (b == 0) {
+            throw new ArithmeticException("Cannot divide by zero");
+        }
+        double result = (double) a / b;
+        history.add(a + " / " + b + " = " + result);
+        return result;
+    }
+
+    public List<String> getHistory() {
+        return history;
+    }
+}
+
+
+Now, we need to update the unit tests to check the new `history` attribute:
+
+java
+public class CalculatorTest {
+    private Calculator calculator;
+
+    @BeforeEach
+    void setUp() {
+        calculator = new Calculator();
+    }
+
+    @Test
+    void testAddPositiveNumbers() {
+        int result = calculator.add(5, 3);
+        assertEquals(8, result);
+        assertEquals(Arrays.asList("5 + 3 = 8"), calculator.getHistory());
+    }
+
+    @Test
+    void testDividePositiveNumbers() {
+        double result = calculator.divide(10, 2);
+        assertEquals(5.0, result, 0.0001);
+        assertEquals(Arrays.asList("10 / 2 = 5.0"), calculator.getHistory());
+    }
+}
+
+
+### Major Modification: Change the collaboration between classes
+
+Let's say we want to add a new `CalculatorHistory` class to handle the calculation history separately:
+
+java
+public class CalculatorHistory {
+    private List<String> history = new ArrayList<>();
+
+    public void addCalculation(String calculation) {
+        history.add(calculation);
+    }
+
+    public List<String> getHistory() {
+        return history;
+    }
+}
+
+public class Calculator {
+    private CalculatorHistory history;
+
+    public Calculator(CalculatorHistory history) {
+        this.history = history;
+    }
+
+    public int add(int a, int b) {
+        int result = a + b;
+        history.addCalculation(a + " + " + b + " = " + result);
+        return result;
+    }
+
+    public double divide(int a, int b) {
+        if (b == 0) {
+            throw new ArithmeticException("Cannot divide by zero");
+        }
+        double result = (double) a / b;
+        history.addCalculation(a + " / " + b + " = " + result);
+        return result;
+    }
+}
+
+
+Now, we need to update the unit tests to work with the new `CalculatorHistory` class:
+
+java
+public class CalculatorTest {
+    private CalculatorHistory history;
+    private Calculator calculator;
+
+    @BeforeEach
+    void setUp() {
+        history = new CalculatorHistory();
+        calculator = new Calculator(history);
+    }
+
+    @Test
+    void testAddPositiveNumbers() {
+        int result = calculator.add(5, 3);
+        assertEquals(8, result);
+        assertEquals(Arrays.asList("5 + 3 = 8"), history.getHistory());
+    }
+
+    @Test
+    void testDividePositiveNumbers() {
+        double result = calculator.divide(10, 2);
+        assertEquals(5.0, result, 0.0001);
+        assertEquals(Arrays.asList("10 / 2 = 5.0"), history.getHistory());
+    }
+}
+
+
+By incorporating these unit, integration, and regression tests, you can ensure that the `Calculator` class and its related components continue to function correctly as the codebase evolves.
